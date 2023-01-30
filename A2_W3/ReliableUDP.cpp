@@ -131,6 +131,7 @@ int main(int argc, char* argv[])
 	Mode mode = Server;
 	Address address;
 
+	// add one more argument for the file name
 	if (argc >= 2)
 	{
 		int a, b, c, d;
@@ -206,6 +207,8 @@ int main(int argc, char* argv[])
 
 		sendAccumulator += DeltaTime;
 
+		// TODO: read the file contents
+		// TODO: check the size of the file
 		unsigned char hello[] = "Hello World ";
 		size_t helloSize = sizeof(hello) + 1;
 		char buffer[33];
@@ -215,10 +218,14 @@ int main(int argc, char* argv[])
 			unsigned char packet[PacketSize];
 			memset(packet, 0, sizeof(packet));
 
+			// TODO: copy the file metadata
+			// TODO: break the file in pieces
+			// TODO: copy the file pieces into the packet
 			memcpy(packet, hello, helloSize);
 			snprintf(buffer, 10, "%d", count);
 			memcpy(packet + 12, buffer, sizeof(count));
 
+			// TODO: send the pieces until the file end
 			connection.SendPacket(packet, sizeof(packet));
 			sendAccumulator -= 1.0f / sendRate;
 
@@ -228,9 +235,16 @@ int main(int argc, char* argv[])
 		while (true)
 		{
 			unsigned char packet[256];
+
+			// TODO: recieve the file metadate
+			// TODO: recieve the file pieces
 			int bytes_read = connection.ReceivePacket(packet, sizeof(packet));
 			if (bytes_read == 0)
 				break;
+
+			// TODO: concatenate the file pieces
+			// TODO: write the file out to disk
+			// TODO: verify the file integrity
 
 			printf("%s\n", packet);
 		}
