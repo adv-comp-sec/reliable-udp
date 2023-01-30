@@ -31,9 +31,16 @@ void readFile(string fileName)
 
 }
 
-void saveFile()
+void saveFile(void)
 {
-
+	ofstream fw("output.txt", std::ofstream::out);
+	//check if file was successfully opened for writing
+	if (fw.is_open())
+	{
+		fw << fileContent;
+		fw.close();
+	}
+	else cout << "Problem with opening file";
 }
 
 // Send and receive the file
