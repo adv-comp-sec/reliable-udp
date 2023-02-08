@@ -26,6 +26,8 @@ const float SendRate = 1.0f / 30.0f;
 const float TimeOut = 10.0f;
 const int PacketSize = 256;
 
+const int MAX_LEN = 100;		//add
+
 class FlowControl
 {
 public:
@@ -207,8 +209,38 @@ int main(int argc, char* argv[])
 
 		sendAccumulator += DeltaTime;
 
+
+
+		////ADD/////
+		FILE* pFile = NULL;
+
+		// ?? should we need to get port number by command line argument?
+		// it is initialized in line 21,22
+
+		pFile = fopen(argv[2], "r");
+		if (pFile == NULL)
+		{
+			printf("ERROR: file does not exist");
+		}
+
+
 		// TODO: read the file contents
+		while (feof(pFile) == 0)
+		{
+			char str[MAX_LEN];
+			fgets(str, MAX_LEN, pFile);
+		}
+
 		// TODO: check the size of the file
+		int fileSize = 0;	
+
+		fseek(pFile, 0, SEEK_END);    
+		fileSize = ftell(pFile);
+		fseek(pFile, 0, SEEK_SET);
+
+
+
+		// delete ??
 		unsigned char hello[] = "Hello World ";
 		size_t helloSize = sizeof(hello) + 1;
 		char buffer[33];
