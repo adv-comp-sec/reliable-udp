@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
 	Mode mode = Server;
 	Address address;
 
-	// add one more argument for the file name
+	// TODO: add one more argument for the file name
 	if (argc >= 2)
 	{
 		int a, b, c, d;
