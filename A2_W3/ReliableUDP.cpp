@@ -132,9 +132,10 @@ int main(int argc, char* argv[])
 
 	Mode mode = Server;
 	Address address;
+	string fileName;
 
-	// TODO: add one more argument for the file name
-	if (argc >= 2)
+	// add one more argument for the file name
+	if (argc >= 3)
 	{
 		int a, b, c, d;
 #pragma warning(suppress : 4996)
@@ -143,6 +144,14 @@ int main(int argc, char* argv[])
 			mode = Client;
 			address = Address(a, b, c, d, ServerPort);
 		}
+		else
+		{
+			printf("failed to read IP address\n");
+			return 1;
+		}
+
+		fileName = argv[2];
+
 	}
 
 	// initialize
@@ -241,7 +250,7 @@ int main(int argc, char* argv[])
 
 
 		// delete ??
-		unsigned char hello[] = "Hello World ";
+		string hello = "Hello World ";
 		size_t helloSize = sizeof(hello) + 1;
 		char buffer[33];
 
