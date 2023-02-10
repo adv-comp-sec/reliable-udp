@@ -132,9 +132,10 @@ int main(int argc, char* argv[])
 
 	Mode mode = Server;
 	Address address;
+	char* fileName;
 
-	// TODO: add one more argument for the file name
-	if (argc >= 2)
+	// add one more argument for the file name
+	if (argc >= 3)
 	{
 		int a, b, c, d;
 #pragma warning(suppress : 4996)
@@ -143,6 +144,14 @@ int main(int argc, char* argv[])
 			mode = Client;
 			address = Address(a, b, c, d, ServerPort);
 		}
+		else
+		{
+			printf("failed to read IP address\n");
+			return 1;
+		}
+
+		fileName = argv[2];
+
 	}
 
 	// initialize
@@ -164,7 +173,34 @@ int main(int argc, char* argv[])
 	}
 
 	if (mode == Client)
+	{
 		connection.Connect(address);
+
+		////ADD/////
+		FILE* pFile = NULL;
+
+		pFile = fopen(fileName, "r");
+		if (pFile == NULL)
+		{
+			printf("ERROR: file does not exist");
+		}
+
+
+		// TODO: read the file contents
+		while (feof(pFile) == 0)
+		{
+			char str[MAX_LEN];
+			fgets(str, MAX_LEN, pFile);
+		}
+
+		// TODO: check the size of the file
+		int fileSize = 0;
+
+		fseek(pFile, 0, SEEK_END);
+		fileSize = ftell(pFile);
+		fseek(pFile, 0, SEEK_SET);
+
+	}
 	else
 		connection.Listen();
 
@@ -210,38 +246,8 @@ int main(int argc, char* argv[])
 		sendAccumulator += DeltaTime;
 
 
-
-		////ADD/////
-		FILE* pFile = NULL;
-
-		// ?? should we need to get port number by command line argument?
-		// it is initialized in line 21,22
-
-		pFile = fopen(argv[2], "r");
-		if (pFile == NULL)
-		{
-			printf("ERROR: file does not exist");
-		}
-
-
-		// TODO: read the file contents
-		while (feof(pFile) == 0)
-		{
-			char str[MAX_LEN];
-			fgets(str, MAX_LEN, pFile);
-		}
-
-		// TODO: check the size of the file
-		int fileSize = 0;	
-
-		fseek(pFile, 0, SEEK_END);    
-		fileSize = ftell(pFile);
-		fseek(pFile, 0, SEEK_SET);
-
-
-
 		// delete ??
-		unsigned char hello[] = "Hello World ";
+		char hello[] = "Hello World ";
 		size_t helloSize = sizeof(hello) + 1;
 		char buffer[33];
 
