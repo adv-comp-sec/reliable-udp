@@ -18,7 +18,7 @@
     <ClCompile Include="ReliableUDP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="A2_W3.cpp">
+    <ClCompile Include="Network_A1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
