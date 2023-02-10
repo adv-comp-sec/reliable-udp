@@ -127,7 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="A2_W3.cpp" />
+    <ClCompile Include="D:\Workspace\VS Projects\Level4\NAD\A01\Network_A1-master\A2_W3\Network_A1.cpp" />
     <ClCompile Include="ReliableUDP.cpp" />
   </ItemGroup>
   <ItemGroup>
