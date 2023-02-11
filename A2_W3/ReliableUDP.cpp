@@ -258,7 +258,7 @@ int main(int argc, char* argv[])
 
 			// TODO: copy the file metadata
 			memcpy(packet, fileName, maxFileName);
-			memcpy(packet+sizeof(fileName), fileSize, maxFileName);
+			memcpy(packet+maxFileName, fileSize, maxFileName);
 
 			// TODO: break the file in pieces
 			memcpy(packet+maxFileName+maxFileName, contents, sizeof(contents));
@@ -277,19 +277,39 @@ int main(int argc, char* argv[])
 
 		while (true)
 		{
-			unsigned char packet[256];
+			unsigned char packet[PacketSize];
 
-			// TODO: recieve the file metadate
-			// TODO: recieve the file pieces
+			// receive the packet data
 			int bytes_read = connection.ReceivePacket(packet, sizeof(packet));
 			if (bytes_read == 0)
 				break;
 
+			// get the file metadata
+			char fileName[maxFileName];
+			char fileSize[maxFileName];
+
+			for (int i = 0; i < maxFileName; i++)
+			{
+				fileName[i] = packet[i];
+			}
+			for (int i = 0; i < maxFileName; i++)
+			{
+				fileSize[i] = packet[i+maxFileName];
+			}
+			
+			char fileContents[maxLine];
+			for (int i = 0; i < sizeof(packet)-maxFileName-maxFileName; i++)
+			{
+				fileContents[i] = packet[i+maxFileName+maxFileName];
+			}
+
+			// TODO: recieve the file pieces
+			
 			// TODO: concatenate the file pieces
 			// TODO: write the file out to disk
 			// TODO: verify the file integrity
 
-			printf("%s\n", packet);
+			printf("%s %s %s\n", fileName, fileSize, fileContents);
 		}
 
 		// show packets that were acked this frame
