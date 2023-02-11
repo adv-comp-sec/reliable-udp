@@ -187,7 +187,6 @@ int main(int argc, char* argv[])
 	float statsAccumulator = 0.0f;
 
 	FlowControl flowControl;
-	int count = 1;
 
 	while (true)
 	{
@@ -251,12 +250,21 @@ int main(int argc, char* argv[])
 
 			// declare packet
 			unsigned char packet[PacketSize];
-			memset(packet, 0, sizeof(packet));
+			memset(packet, 0, PacketSize);
 
 			// read the file contents
-			while (feof(pFile) == 0)
+			char ch;
+			while (!feof(pFile))
 			{
-				fgets(contents, maxLine, pFile);
+				for (int count = 0; count < maxLine; count++)
+				{
+					ch = fgetc(pFile);
+					contents[count] = ch;
+					if (feof(pFile))
+					{
+						break;
+					}
+				}
 
 				// copy the file metadata
 				memcpy(packet, fileName, maxFileName);
@@ -272,6 +280,9 @@ int main(int argc, char* argv[])
 
 			sendAccumulator -= 1.0f / sendRate;
 		}
+		
+		FILE* outFile = NULL;
+		int currentFileSize = 0;
 
 		while (true)
 		{
@@ -294,20 +305,39 @@ int main(int argc, char* argv[])
 			{
 				fileSize[i] = packet[i+maxFileName];
 			}
-			
+
+			int intFileSize = atoi(fileSize);
+
+			// get the file contents
 			char fileContents[maxLine];
 			for (int i = 0; i < maxLine; i++)
 			{
 				fileContents[i] = packet[i+maxFileName+maxFileSize];
 			}
 
-			// TODO: recieve the file pieces
+			// create a file
+			if (outFile == NULL)
+			{
+				// FOR DEBUG ONLY
+				strcat(fileName, "out.txt");
+
+				outFile = fopen(fileName, "w");
+			}
 			
-			// TODO: concatenate the file pieces
-			// TODO: write the file out to disk
-			// TODO: verify the file integrity
+			if (currentFileSize < intFileSize)
+			{
+				fwrite(fileContents, sizeof(char), sizeof(fileContents), outFile);
+				currentFileSize += sizeof(fileContents);
+			}
 
 			printf("%s %s %s\n", fileName, fileSize, fileContents);
+
+			// TODO: verify the file integrity
+		}
+
+		if (outFile != NULL)
+		{
+			fclose(outFile);
 		}
 
 		// show packets that were acked this frame
