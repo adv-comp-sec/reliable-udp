@@ -1,4 +1,4 @@
-/*
+﻿/*
 	Reliability and Flow Control Example
 	From "Networking for Game Programmers" - http://www.gaffer.org/networking-for-game-programmers
 	Author: Glenn Fiedler <gaffer@gaffer.org>
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
 
 	Mode mode = Server;
 	Address address;
-	char* fileName;
+	char* fileName = NULL;
 
 	// add one more argument for the file name
 	if (argc >= 3)
@@ -172,6 +172,8 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	unsigned char packet[PacketSize];
+
 	if (mode == Client)
 	{
 		connection.Connect(address);
@@ -189,8 +191,10 @@ int main(int argc, char* argv[])
 		// TODO: read the file contents
 		while (feof(pFile) == 0)
 		{
+			memset(packet, 0, sizeof(packet));
 			char str[MAX_LEN];
 			fgets(str, MAX_LEN, pFile);
+			
 		}
 
 		// TODO: check the size of the file
@@ -203,6 +207,8 @@ int main(int argc, char* argv[])
 	}
 	else
 		connection.Listen();
+
+
 
 	bool connected = false;
 	float sendAccumulator = 0.0f;
