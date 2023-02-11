@@ -5,12 +5,10 @@
 */
 
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <vector>
 
 #include "Net.h"
-
+#include "crc.h"
 #pragma warning(disable : 4996)
 
 //#define SHOW_ACKS
@@ -274,6 +272,7 @@ int main(int argc, char* argv[])
 				memcpy(packet + maxFileName + maxFileSize, contents, maxLine);
 
 				// send the pieces until the file end
+				crcSlow(packet, sizeof(packet));
 				connection.SendPacket(packet, sizeof(packet));
 
 			}
@@ -292,6 +291,8 @@ int main(int argc, char* argv[])
 			int bytes_read = connection.ReceivePacket(packet, sizeof(packet));
 			if (bytes_read == 0)
 				break;
+
+			crcSlow(packet, sizeof(packet));
 
 			// get the file metadata
 			char fileName[maxFileName];
@@ -318,9 +319,6 @@ int main(int argc, char* argv[])
 			// create a file
 			if (outFile == NULL)
 			{
-				// FOR DEBUG ONLY
-				strcat(fileName, "out.txt");
-
 				outFile = fopen(fileName, "w");
 			}
 			
