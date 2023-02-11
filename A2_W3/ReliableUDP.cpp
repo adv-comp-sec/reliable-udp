@@ -26,7 +26,9 @@ const float SendRate = 1.0f / 30.0f;
 const float TimeOut = 10.0f;
 const int PacketSize = 256;
 
-const int MAX_LEN = 100;		//add
+const int maxFileName = 16;
+const int maxFileSize = 16;
+const int maxLine = PacketSize - (maxFileName + maxFileSize);
 
 class FlowControl
 {
@@ -132,7 +134,7 @@ int main(int argc, char* argv[])
 
 	Mode mode = Server;
 	Address address;
-	char* fileName = NULL;
+	char fileName[maxFileName];
 
 	// add one more argument for the file name
 	if (argc >= 3)
@@ -150,7 +152,7 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 
-		fileName = argv[2];
+		strcpy(fileName, argv[2]);
 
 	}
 
@@ -177,32 +179,6 @@ int main(int argc, char* argv[])
 	if (mode == Client)
 	{
 		connection.Connect(address);
-
-		////ADD/////
-		FILE* pFile = NULL;
-
-		pFile = fopen(fileName, "r");
-		if (pFile == NULL)
-		{
-			printf("ERROR: file does not exist");
-		}
-
-
-		// TODO: read the file contents
-		while (feof(pFile) == 0)
-		{
-			memset(packet, 0, sizeof(packet));
-			char str[MAX_LEN];
-			fgets(str, MAX_LEN, pFile);
-			
-		}
-
-		// TODO: check the size of the file
-		int fileSize = 0;
-
-		fseek(pFile, 0, SEEK_END);
-		fileSize = ftell(pFile);
-		fseek(pFile, 0, SEEK_SET);
 
 	}
 	else
@@ -248,49 +224,94 @@ int main(int argc, char* argv[])
 		}
 
 		// send and receive packets
-
 		sendAccumulator += DeltaTime;
 
-
-		// delete ??
-		char hello[] = "Hello World ";
-		size_t helloSize = sizeof(hello) + 1;
-		char buffer[33];
+		char fileSize[maxFileSize];
+		char contents[maxLine] = "";
 
 		while (sendAccumulator > 1.0f / sendRate)
 		{
+			if (mode == Server)
+				break;
+
+			// open the file
+			FILE* pFile = NULL;
+
+			pFile = fopen(fileName, "r");
+			if (pFile == NULL)
+			{
+				printf("ERROR: file does not exist");
+				break;
+			}
+				
+			// check the size of the file
+			int intfileSize = 0;
+
+			fseek(pFile, 0, SEEK_END);
+			intfileSize = ftell(pFile);
+			fseek(pFile, 0, SEEK_SET);
+
+			itoa(intfileSize, fileSize, 10);
+
+			// declare packet
 			unsigned char packet[PacketSize];
 			memset(packet, 0, sizeof(packet));
 
-			// TODO: copy the file metadata
-			// TODO: break the file in pieces
-			// TODO: copy the file pieces into the packet
-			memcpy(packet, hello, helloSize);
-			snprintf(buffer, 10, "%d", count);
-			memcpy(packet + 12, buffer, sizeof(count));
+			// read the file contents
+			while (feof(pFile) == 0)
+			{
+				fgets(contents, maxLine, pFile);
 
-			// TODO: send the pieces until the file end
-			connection.SendPacket(packet, sizeof(packet));
+				// copy the file metadata
+				memcpy(packet, fileName, maxFileName);
+				memcpy(packet + maxFileName, fileSize, maxFileSize);
+
+				// break the file in pieces
+				memcpy(packet + maxFileName + maxFileSize, contents, maxLine);
+
+				// send the pieces until the file end
+				connection.SendPacket(packet, sizeof(packet));
+
+			}
+
 			sendAccumulator -= 1.0f / sendRate;
-
-			count++;
 		}
 
 		while (true)
 		{
-			unsigned char packet[256];
+			unsigned char packet[PacketSize];
 
-			// TODO: recieve the file metadate
-			// TODO: recieve the file pieces
+			// receive the packet data
 			int bytes_read = connection.ReceivePacket(packet, sizeof(packet));
 			if (bytes_read == 0)
 				break;
 
+			// get the file metadata
+			char fileName[maxFileName];
+			char fileSize[maxFileSize];
+
+			for (int i = 0; i < maxFileName; i++)
+			{
+				fileName[i] = packet[i];
+			}
+			for (int i = 0; i < maxFileSize; i++)
+			{
+				fileSize[i] = packet[i+maxFileName];
+			}
+			
+			char fileContents[maxLine];
+			for (int i = 0; i < maxLine; i++)
+			{
+				fileContents[i] = packet[i+maxFileName+maxFileSize];
+			}
+
+			// TODO: recieve the file pieces
+			
 			// TODO: concatenate the file pieces
 			// TODO: write the file out to disk
 			// TODO: verify the file integrity
 
-			printf("%s\n", packet);
+			printf("%s %s %s\n", fileName, fileSize, fileContents);
 		}
 
 		// show packets that were acked this frame
