@@ -26,7 +26,9 @@ const float SendRate = 1.0f / 30.0f;
 const float TimeOut = 10.0f;
 const int PacketSize = 256;
 
-const int MAX_LEN = 100;		//add
+const int maxFileName = 32;
+const int maxLine = 256 - 32;
+
 
 class FlowControl
 {
@@ -132,7 +134,8 @@ int main(int argc, char* argv[])
 
 	Mode mode = Server;
 	Address address;
-	char* fileName;
+	char fileName[maxFileName];
+	char fileSize[maxFileName];
 
 	// add one more argument for the file name
 	if (argc >= 3)
@@ -150,7 +153,7 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 
-		fileName = argv[2];
+		strcpy(fileName, argv[2]);
 
 	}
 
@@ -172,11 +175,13 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	char contents[maxLine];
+
 	if (mode == Client)
 	{
 		connection.Connect(address);
 
-		////ADD/////
+		// open the file
 		FILE* pFile = NULL;
 
 		pFile = fopen(fileName, "r");
@@ -184,21 +189,23 @@ int main(int argc, char* argv[])
 		{
 			printf("ERROR: file does not exist");
 		}
+		else
+		{ 
+			// read the file contents
+			while (feof(pFile) == 0)
+			{
+				fgets(contents, maxLine, pFile);
+			}
 
+			// check the size of the file
+			int intfileSize = 0;
 
-		// TODO: read the file contents
-		while (feof(pFile) == 0)
-		{
-			char str[MAX_LEN];
-			fgets(str, MAX_LEN, pFile);
+			fseek(pFile, 0, SEEK_END);
+			intfileSize = ftell(pFile);
+			fseek(pFile, 0, SEEK_SET);
+
+			itoa(intfileSize, fileSize, 10);
 		}
-
-		// TODO: check the size of the file
-		int fileSize = 0;
-
-		fseek(pFile, 0, SEEK_END);
-		fileSize = ftell(pFile);
-		fseek(pFile, 0, SEEK_SET);
 
 	}
 	else
@@ -242,14 +249,7 @@ int main(int argc, char* argv[])
 		}
 
 		// send and receive packets
-
 		sendAccumulator += DeltaTime;
-
-
-		// delete ??
-		char hello[] = "Hello World ";
-		size_t helloSize = sizeof(hello) + 1;
-		char buffer[33];
 
 		while (sendAccumulator > 1.0f / sendRate)
 		{
@@ -257,11 +257,16 @@ int main(int argc, char* argv[])
 			memset(packet, 0, sizeof(packet));
 
 			// TODO: copy the file metadata
+			memcpy(packet, fileName, maxFileName);
+			memcpy(packet+sizeof(fileName), fileSize, maxFileName);
+
 			// TODO: break the file in pieces
+			memcpy(packet+maxFileName+maxFileName, contents, sizeof(contents));
+
 			// TODO: copy the file pieces into the packet
-			memcpy(packet, hello, helloSize);
-			snprintf(buffer, 10, "%d", count);
-			memcpy(packet + 12, buffer, sizeof(count));
+
+			//snprintf(buffer, 10, "%d", count);
+			// memcpy(packet + 12, buffer, sizeof(count));
 
 			// TODO: send the pieces until the file end
 			connection.SendPacket(packet, sizeof(packet));
