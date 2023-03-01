@@ -21,7 +21,7 @@
     <ClCompile Include="Network_A1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="crc.c">
+    <ClCompile Include="crc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

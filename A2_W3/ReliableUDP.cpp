@@ -5,12 +5,10 @@
 */
 
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <vector>
 
 #include "Net.h"
-
+#include "crc.h"
 #pragma warning(disable : 4996)
 
 //#define SHOW_ACKS
@@ -191,7 +189,6 @@ int main(int argc, char* argv[])
 	float statsAccumulator = 0.0f;
 
 	FlowControl flowControl;
-	int count = 1;
 
 	while (true)
 	{
@@ -255,12 +252,21 @@ int main(int argc, char* argv[])
 
 			// declare packet
 			unsigned char packet[PacketSize];
-			memset(packet, 0, sizeof(packet));
+			memset(packet, 0, PacketSize);
 
 			// read the file contents
-			while (feof(pFile) == 0)
+			char ch;
+			while (!feof(pFile))
 			{
-				fgets(contents, maxLine, pFile);
+				for (int count = 0; count < maxLine; count++)
+				{
+					ch = fgetc(pFile);
+					contents[count] = ch;
+					if (feof(pFile))
+					{
+						break;
+					}
+				}
 
 				// copy the file metadata
 				memcpy(packet, fileName, maxFileName);
@@ -270,12 +276,16 @@ int main(int argc, char* argv[])
 				memcpy(packet + maxFileName + maxFileSize, contents, maxLine);
 
 				// send the pieces until the file end
+				crcSlow(packet, sizeof(packet));
 				connection.SendPacket(packet, sizeof(packet));
 
 			}
 
 			sendAccumulator -= 1.0f / sendRate;
 		}
+		
+		FILE* outFile = NULL;
+		int currentFileSize = 0;
 
 		while (true)
 		{
@@ -285,6 +295,8 @@ int main(int argc, char* argv[])
 			int bytes_read = connection.ReceivePacket(packet, sizeof(packet));
 			if (bytes_read == 0)
 				break;
+
+			crcSlow(packet, sizeof(packet));
 
 			// get the file metadata
 			char fileName[maxFileName];
@@ -298,20 +310,36 @@ int main(int argc, char* argv[])
 			{
 				fileSize[i] = packet[i+maxFileName];
 			}
-			
+
+			int intFileSize = atoi(fileSize);
+
+			// get the file contents
 			char fileContents[maxLine];
 			for (int i = 0; i < maxLine; i++)
 			{
 				fileContents[i] = packet[i+maxFileName+maxFileSize];
 			}
 
-			// TODO: recieve the file pieces
+			// create a file
+			if (outFile == NULL)
+			{
+				outFile = fopen(fileName, "w");
+			}
 			
-			// TODO: concatenate the file pieces
-			// TODO: write the file out to disk
-			// TODO: verify the file integrity
+			if (currentFileSize < intFileSize)
+			{
+				fwrite(fileContents, sizeof(char), sizeof(fileContents), outFile);
+				currentFileSize += sizeof(fileContents);
+			}
 
 			printf("%s %s %s\n", fileName, fileSize, fileContents);
+
+			// TODO: verify the file integrity
+		}
+
+		if (outFile != NULL)
+		{
+			fclose(outFile);
 		}
 
 		// show packets that were acked this frame
