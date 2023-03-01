@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
 
 			// open the file
 			FILE* pFile = NULL;
-
+	
 			pFile = fopen(fileName, "r");
 			if (pFile == NULL)
 			{
