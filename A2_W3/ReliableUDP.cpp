@@ -254,7 +254,8 @@ int main(int argc, char* argv[])
 			char ch;
 			while (!feof(pFile))
 			{
-				for (int count = 0; count < maxLine; count++)
+				fread(contents, sizeof(char), maxLine, pFile);
+				/*for (int count = 0; count < maxLine; count++)
 				{
 					ch = fgetc(pFile);
 					contents[count] = ch;
@@ -262,7 +263,7 @@ int main(int argc, char* argv[])
 					{
 						break;
 					}
-				}
+				}*/
 
 				// copy the file metadata
 				memcpy(packet, fileName, maxFileName);
@@ -298,6 +299,7 @@ int main(int argc, char* argv[])
 			char fileName[maxFileName];
 			char fileSize[maxFileSize];
 
+			// \0 
 			for (int i = 0; i < maxFileName; i++)
 			{
 				fileName[i] = packet[i];
