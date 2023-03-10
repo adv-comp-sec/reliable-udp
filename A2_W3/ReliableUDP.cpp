@@ -258,16 +258,8 @@ int main(int argc, char* argv[])
 			char ch;
 			while (!feof(pFile))
 			{
+				memset(contents, 0, maxLine);
 				fread(contents, sizeof(char), maxLine, pFile);
-				/*for (int count = 0; count < maxLine; count++)
-				{
-					ch = fgetc(pFile);
-					contents[count] = ch;
-					if (feof(pFile))
-					{
-						break;
-					}
-				}*/
 
 				// copy the file metadata
 				memcpy(packet, fileName, maxFileName);
@@ -291,6 +283,7 @@ int main(int argc, char* argv[])
 		while (true)
 		{
 			unsigned char packet[PacketSize];
+			memset(packet, 0, PacketSize);
 
 			// receive the packet data
 			int bytes_read = connection.ReceivePacket(packet, sizeof(packet));
@@ -317,6 +310,8 @@ int main(int argc, char* argv[])
 
 			// get the file contents
 			char fileContents[maxLine];
+			memset(fileContents, 0, maxLine);
+
 			for (int i = 0; i < maxLine; i++)
 			{
 				fileContents[i] = packet[i+maxFileName+maxFileSize];
